@@ -9,6 +9,7 @@
     flake-utils.url = "github:numtide/flake-utils?ref=main";
     nix-filter.url = "github:numtide/nix-filter?ref=main";
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixpkgs-unstable";
+    nixpkgs-master.url = "github:NixOS/nixpkgs/master";
     rocksdb = { url = "github:matrix-construct/rocksdb?ref=tuwunel-changes"; flake = false; };
     liburing = { url = "github:axboe/liburing?ref=master"; flake = false; };
   };
@@ -20,6 +21,10 @@
         inherit system;
       };
       pkgsHostStatic = pkgsHost.pkgsStatic;
+
+      master = import inputs.nixpkgs-master {
+        inherit system;
+      };
 
       # The Rust toolchain to use
       toolchain = inputs.fenix.packages.${system}.fromToolchainFile {
@@ -36,8 +41,8 @@
         craneLib = ((inputs.crane.mkLib pkgs).overrideToolchain (_: toolchain));
         inherit inputs;
         main = self.callPackage ./nix/pkgs/main {};
-        oci-image = self.callPackage ./nix/pkgs/oci-image {};
-        tini = pkgs.tini.overrideAttrs {
+        oci-image = self.callPackage ./nix/pkgs/oci-image { master = master; };
+        tini = master.tini.overrideAttrs {
             # newer clang/gcc is unhappy with tini-static: <https://3.dog/~strawberry/pb/c8y4>
             patches = [ (pkgs.fetchpatch {
                 url = "https://patch-diff.githubusercontent.com/raw/krallin/tini/pull/224.patch";

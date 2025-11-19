@@ -6,6 +6,7 @@
 , main
 , stdenv
 , tini
+, master
 }:
 
 dockerTools.buildLayeredImage {
@@ -20,7 +21,7 @@ dockerTools.buildLayeredImage {
     Entrypoint = if !stdenv.hostPlatform.isDarwin
       # Use the `tini` init system so that signals (e.g. ctrl+c/SIGINT)
       # are handled as expected
-      then [ "${lib.getExe' tini "tini"}" "--" ]
+      then [ "${lib.getExe' master.tini "tini"}" "--" ]
       else [];
     Cmd = [
       "${lib.getExe main}"
